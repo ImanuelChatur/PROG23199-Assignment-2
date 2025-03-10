@@ -1,0 +1,64 @@
+[
+ {
+   "iid": 1,
+   "name": "Banana",
+   "category": "Fruit",
+   "price": 0.6
+ },
+ {
+   "iid": 2,
+   "name": "Orange",
+   "category": "Fruit",
+   "price": 1.25
+ },
+ {
+   "iid": 3,
+   "name": "Beef",
+   "category": "Meat",
+   "price": 5.25
+ },
+ {
+   "iid": 4,
+   "name": "Milk",
+   "category": "Dairy",
+   "price": 5.5
+ },
+ {
+   "iid": 5,
+   "name": "Carrot",
+   "category": "Vegetables",
+   "price": 1.1
+ },
+ {
+   "iid": 6,
+   "name": "Beans",
+   "category": "Vegetables",
+   "price": 2.75
+ },
+ {
+   "iid": 7,
+   "name": "Chicken",
+   "category": "Meat",
+   "price": 3.45
+ },
+ {
+   "iid": 8,
+   "name": "Chips",
+   "category": "Snacks",
+   "price": 2
+ },
+ {
+   "iid": 9,
+   "name": "Cookies",
+   "category": "Snacks",
+   "price": 5.6
+ },
+ {
+   "iid": 10,
+   "name": "Cheese",
+   "category": "Dairy",
+   "price": 7.85
+ }
+]
+
+
