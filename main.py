@@ -41,9 +41,14 @@ def write_json_to_db(conn, cursor):
         print("Item json Inserted successfully")
 
 def write_file_to_db(conn, cursor):
-    with open('Transactions_Imanuel.txt.csv', 'r') as f:
-        pass
-
+    with open('Transactions_Imanuel.txt', 'r') as f:
+        f.readline()
+        f.readline()
+        transactions = [list(line.split()) for line in f.readlines()]
+        print(transactions)
+        sql = "INSERT INTO Transactions_Imanuel VALUES (?, ?, ?, ?)"
+        cursor.executemany(sql, transactions)
+        conn.commit()
 def main():
     conn = create_connection()
     if conn is None:
@@ -58,6 +63,7 @@ def main():
     reset_db(conn, c)
     write_csv_to_db(conn, c)
     write_json_to_db(conn, c)
+    write_file_to_db(conn, c)
 
 if __name__ == '__main__':
     main()
