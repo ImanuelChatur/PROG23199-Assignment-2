@@ -7,3 +7,6 @@ class Item:
     name: str
     category: str
     price: float
+
+    def get_category(self):
+        return self.category
