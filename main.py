@@ -7,6 +7,11 @@ from Transaction import Transaction
 
 
 def create_connection():
+    """Opens SQL connection
+    returns:
+        conn: sql connection
+        c: sql cursor
+    """
     try:
         conn = sqlite3.connect('MyStore_Imanuel.db')
         c = conn.cursor()
@@ -17,6 +22,9 @@ def create_connection():
 
 
 def reset_db(conn, cursor):
+    """Resets Database to stock
+    Takes connection and cursor, deletes data from tables
+    """
     cursor.execute('DELETE FROM Customers_Imanuel')
     cursor.execute('DELETE FROM Items_Imanuel')
     cursor.execute('DELETE FROM Transactions_Imanuel')
@@ -24,6 +32,9 @@ def reset_db(conn, cursor):
 
 
 def write_csv_to_db(conn, cursor):
+    """Write CSV to Database
+    reads .csv file, and inserts directly into database
+    """
     r = csv.reader(open('Customers_Imanuel.csv'), delimiter='-')
     customers = [cust for cust in r]
     sql = "INSERT INTO Customers_Imanuel VALUES (?, ?, ?, ?)"
@@ -33,6 +44,9 @@ def write_csv_to_db(conn, cursor):
 
 
 def write_json_to_db(conn, cursor):
+    """Write JSON to Database
+    reads .json file and inserts directly into database
+    """
     with open('Items_Imanuel.json', 'r') as f:
         loader = json.load(f)
         items = [[i['iid'], i['name'], i['category'], i['price']] for i in loader]
@@ -54,6 +68,9 @@ def write_file_to_db(conn, cursor):
 
 
 def create_tables(conn, cursor):
+    """Create tables
+    Creates category in database, drops tables if existed before
+    """
     cursor.executescript(
         '''
         DROP TABLE IF EXISTS CategoryTotal_Dairy;
@@ -96,12 +113,17 @@ def create_tables(conn, cursor):
 
 
 def fill_categories(conn, c):
+    """Fill Category table
+    Fetches item and transaction list, then inserts calculated data into
+    their respective CategoryTotal table.
+    """
     sql = "SELECT * FROM Items_Imanuel"
     c.execute(sql)
     item_list = [Item(i[0], i[1], i[2], i[3]) for i in c.fetchall()]
     sql = "SELECT * FROM Transactions_Imanuel"
     c.execute(sql)
     transaction_list = [Transaction(t[0], t[1], t[2], t[3]) for t in c.fetchall()]
+
     for item in item_list:
         quantity = sum(q.get_quantity() for q in transaction_list if q.get_id() == item.get_id())
         total = (item.get_id(), item.get_name(), item.get_price()*quantity)
@@ -112,6 +134,9 @@ def fill_categories(conn, c):
 
 
 def main():
+    """Main program
+    Initializes program, fills table and asks user for inputs
+    """
     conn, c = create_connection()
 
     if conn is None:
