@@ -57,6 +57,48 @@ def write_file_to_db(conn, cursor):
         conn.commit()
 
 
+def create_tables(conn, cursor):
+    cursor.executescript(
+        '''
+        DROP TABLE IF EXISTS CategoryTotal_Dairy;
+        DROP TABLE IF EXISTS CategoryTotal_Meat;
+        DROP TABLE IF EXISTS CategoryTotal_Fruit;
+        DROP TABLE IF EXISTS CategoryTotal_Snacks;
+        DROP TABLE IF EXISTS CategoryTotal_Vegetables;
+        CREATE TABLE "CategoryTotal_Dairy" (
+	    "ItemID"	INTEGER,
+	    "Item"	VARCHAR(20),
+	    "Amount"	INTEGER,
+	    PRIMARY KEY("ItemID")
+        );
+        CREATE TABLE "CategoryTotal_Meat" (
+	        "ItemID"	INTEGER,
+	        "Item"	VARCHAR(20),
+	        "Amount"	INTEGER,
+	        PRIMARY KEY("ItemID")
+        );
+        CREATE TABLE "CategoryTotal_Fruit" (
+	        "ItemID"	INTEGER,
+	        "Item"	VARCHAR(20),
+	        "Amount"	INTEGER,
+	        PRIMARY KEY("ItemID")
+        );
+        CREATE TABLE "CategoryTotal_Snacks" (
+	        "ItemID"	INTEGER,
+	        "Item"	VARCHAR(20),
+	        "Amount"	INTEGER,
+	        PRIMARY KEY("ItemID")
+        );
+        CREATE TABLE "CategoryTotal_Vegetables" (
+            "ItemID"	INTEGER,
+            "Item"	VARCHAR(20),
+            "Amount"	INTEGER,
+            PRIMARY KEY("ItemID")
+        );
+        ''')
+    conn.commit()
+
+
 def main():
     conn = create_connection()
     if conn is None:
@@ -72,6 +114,7 @@ def main():
     write_csv_to_db(conn, c)
     write_json_to_db(conn, c)
     write_file_to_db(conn, c)
+    create_tables(conn, c)
 
 
 if __name__ == '__main__':
