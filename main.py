@@ -3,6 +3,7 @@ import sqlite3
 import csv
 from Customer import Customer
 from Item import Item
+from Transaction import Transaction
 
 
 def create_connection():
@@ -98,13 +99,16 @@ def fill_categories(conn, c):
     sql = "SELECT * FROM Items_Imanuel"
     c.execute(sql)
     item_list = [Item(i[0], i[1], i[2], i[3]) for i in c.fetchall()]
-    dairy_list = [i for i in item_list if i.get_category() == "Dairy"]
-    meat_list = [i for i in item_list if i.get_category() == "Meat"]
-    fruit_list = [i for i in item_list if i.get_category() == "Fruit"]
-    snack_list = [i for i in item_list if i.get_category() == "Snacks"]
-    veg_list = [i for i in item_list if i.get_category() == "Vegetables"]
-    print(item_list)
-    print(dairy_list)
+    sql = "SELECT * FROM Transactions_Imanuel"
+    c.execute(sql)
+    transaction_list = [Transaction(t[0], t[1], t[2], t[3]) for t in c.fetchall()]
+    for item in item_list:
+        quantity = sum(q.get_quantity() for q in transaction_list if q.get_id() == item.get_id())
+        total = (item.get_id(), item.get_name(), item.get_price()*quantity)
+        sql = f"INSERT INTO CategoryTotal_{item.get_category()}(ItemID, Item, Amount) VALUES(?,?,?)"
+        c.execute(sql, total)
+        print(total)
+    conn.commit()
 
 
 def main():

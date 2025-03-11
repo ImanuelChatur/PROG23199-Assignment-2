@@ -7,3 +7,8 @@ class Transaction:
     iid: int
     cid: int
     quantity: int
+
+    def get_quantity(self):
+        return self.quantity
+    def get_id(self):
+        return self.iid
