@@ -13,16 +13,16 @@ def create_connection():
         conn: sql connection
         c: sql cursor
     """
+    global conn
+    global cursor
     try:
         conn = sqlite3.connect('MyStore_Imanuel.db')
-        c = conn.cursor()
-        return conn, c
-
+        cursor = conn.cursor()
     except Exception as e:
         print(e)
 
 
-def reset_db(conn, cursor):
+def reset_db():
     """Resets Database to stock
     Takes connection and cursor, deletes data from tables
     """
@@ -32,7 +32,7 @@ def reset_db(conn, cursor):
     conn.commit()
 
 
-def write_csv_to_db(conn, cursor):
+def write_csv_to_db():
     """Write CSV to Database
     reads .csv file, and inserts directly into database
     """
@@ -44,7 +44,7 @@ def write_csv_to_db(conn, cursor):
     print("Customer CSV Inserted successfully")
 
 
-def write_json_to_db(conn, cursor):
+def write_json_to_db():
     """Write JSON to Database
     reads .json file and inserts directly into database
     """
@@ -57,7 +57,7 @@ def write_json_to_db(conn, cursor):
         print("Item json Inserted successfully")
 
 
-def write_file_to_db(conn, cursor):
+def write_file_to_db():
     with open('Transactions_Imanuel.txt', 'r') as f:
         f.readline()
         f.readline()
@@ -68,7 +68,7 @@ def write_file_to_db(conn, cursor):
         print("Transaction file Inserted successfully")
 
 
-def create_tables(conn, cursor):
+def create_tables():
     """Create tables
     Creates category in database, drops tables if existed before
     """
@@ -113,57 +113,53 @@ def create_tables(conn, cursor):
     conn.commit()
 
 
-def fill_categories(conn, c):
+def fill_categories():
     """Fill Category table
     Fetches item and transaction list, then inserts calculated data into
     their respective CategoryTotal table.
     """
     sql = "SELECT * FROM Items_Imanuel"
-    c.execute(sql)
-    item_list = [Item(i[0], i[1], i[2], i[3]) for i in c.fetchall()]
+    cursor.execute(sql)
+    item_list = [Item(i[0], i[1], i[2], i[3]) for i in cursor.fetchall()]
     sql = "SELECT * FROM Transactions_Imanuel"
-    c.execute(sql)
-    transaction_list = [Transaction(t[0], t[1], t[2], t[3]) for t in c.fetchall()]
+    cursor.execute(sql)
+    transaction_list = [Transaction(t[0], t[1], t[2], t[3]) for t in cursor.fetchall()]
 
     for item in item_list:
         quantity = sum(q.get_quantity() for q in transaction_list if q.get_id() == item.get_id())
         total = (item.get_id(), item.get_name(), item.get_price()*quantity)
         sql = f"INSERT INTO CategoryTotal_{item.get_category()}(ItemID, Item, Amount) VALUES(?,?,?)"
-        c.execute(sql, total)
+        cursor.execute(sql, total)
     conn.commit()
 
-def display_item_information(conn, c, category):
+def display_item_information(category):
     sql = f"SELECT * FROM CategoryTotal_{category}"
-    c.execute(sql)
+    cursor.execute(sql)
     print(f"Display Information of {category}")
-    print(c.fetchall())
-    for item in c.fetchall():
+    print(cursor.fetchall())
+    for item in cursor.fetchall():
         print(f"{item[1]} costs ${item[2]}")
 
-def display_customer_information(conn, c, email):
-    pass
+def display_customer_information(email):
+    sql = f"SELECT * FROM Customers_Imanuel WHERE Email = '{email}'"
+    cursor.execute(sql)
 
 
 def main():
     """Main program
     Initializes program, fills table and asks user for inputs
     """
-    conn, c = create_connection()
-
-    if conn is None:
-        print("Unable to Connect to File.")
-        return
-
-    reset_db(conn, c)
-    write_csv_to_db(conn, c)
-    write_json_to_db(conn, c)
-    write_file_to_db(conn, c)
-    create_tables(conn, c)
-    fill_categories(conn, c)
+    create_connection()
+    reset_db()
+    write_csv_to_db()
+    write_json_to_db()
+    write_file_to_db()
+    create_tables()
+    fill_categories()
 
     print("Welcome to the program!")
     category = input("Enter category: ")
-    display_item_information(conn, c, category)
+    display_item_information(category)
     email = input("Enter email: ")
 
 
