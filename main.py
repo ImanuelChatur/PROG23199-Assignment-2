@@ -1,6 +1,7 @@
 import json
 import sqlite3
 import csv
+
 from Customer import Customer
 from Item import Item
 from Transaction import Transaction
@@ -129,9 +130,17 @@ def fill_categories(conn, c):
         total = (item.get_id(), item.get_name(), item.get_price()*quantity)
         sql = f"INSERT INTO CategoryTotal_{item.get_category()}(ItemID, Item, Amount) VALUES(?,?,?)"
         c.execute(sql, total)
-        print(total)
     conn.commit()
 
+def display_item_information(conn, c, category):
+    sql = f"SELECT * FROM CategoryTotal_{category}"
+    c.execute(sql)
+    print(f"Display Information of {category}")
+    for item in c.fetchall():
+        print(f"{item[1]} costs ${item[2]}")
+
+def display_customer_information(conn, c, email):
+    pass
 
 def main():
     """Main program
@@ -149,6 +158,11 @@ def main():
     write_file_to_db(conn, c)
     create_tables(conn, c)
     fill_categories(conn, c)
+
+    print("Welcome to the program!")
+    category = input("Enter category: ")
+    display_item_information(conn, c, category)
+    email = input("Enter email: ")
 
 
 if __name__ == '__main__':
