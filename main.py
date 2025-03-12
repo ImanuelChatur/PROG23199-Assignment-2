@@ -136,11 +136,13 @@ def display_item_information(conn, c, category):
     sql = f"SELECT * FROM CategoryTotal_{category}"
     c.execute(sql)
     print(f"Display Information of {category}")
+    print(c.fetchall())
     for item in c.fetchall():
         print(f"{item[1]} costs ${item[2]}")
 
 def display_customer_information(conn, c, email):
     pass
+
 
 def main():
     """Main program
