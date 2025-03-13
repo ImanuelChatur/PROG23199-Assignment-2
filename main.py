@@ -2,12 +2,7 @@ from StoreManager import StoreManager
 
 def display_item_information(category):
     pass
-    # sql = f"SELECT * FROM CategoryTotal_{category}"
-    # cursor.execute(sql)
-    # print(f"Display Information of {category}")
-    # print(cursor.fetchall())
-    # for item in cursor.fetchall():
-    #     print(f"{item[1]} costs ${item[2]}")
+
 
 def display_customer_information(email):
     pass
@@ -18,19 +13,21 @@ def display_customer_information(email):
 def main():
     """Main program
     Initializes program, fills table and asks user for inputs
+
+    1. Initialize Database On launch !
+    2. User input category; display detailed information !
+    3. User input email; display all customer transactions ?
+        Calculate and display total cost of all transactions
+    4. User enters SQL query; do it
     """
     store = StoreManager()
-    store.reset_db()
-    store.write_csv_to_db()
-    store.write_json_to_db()
-    store.write_file_to_db()
-    store.create_tables()
-    store.fill_categories()
 
     print("Welcome to the program!")
     category = input("Enter category: ")
-    display_item_information(category)
+    store.display_category_totals(category)
+
     email = input("Enter email: ")
+    customer = store.retrieve_customer_transactions("alex@myemail.com")
 
 
 if __name__ == '__main__':
