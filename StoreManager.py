@@ -8,9 +8,6 @@ from Transaction import Transaction
 
 
 class StoreManager:
-    customer_csv = "Customers_Imanuel.csv"
-    items_json = "Items_Imanuel.json"
-    transactions_txt = "Transactions_Imanuel.txt"
     store_db = "MyStore_Imanuel.db"
 
     def __init__(self):
@@ -23,7 +20,6 @@ class StoreManager:
         self.items = self.get_items()
         self.transactions = self.get_transactions()
         self.customers = self.get_customers()
-
         self.initialize_db()
 
     def initialize_db(self):
@@ -67,10 +63,12 @@ class StoreManager:
         return self.customers
 
     def write_csv_to_db(self):
+        """Write CSV to database
+        reads .csv file and inserts directly into database"""
         r = csv.reader(open('Customers_Imanuel.csv'), delimiter='-')
         customers = [cust for cust in r]
         sql = "INSERT INTO Customers_Imanuel VALUES (?, ?, ?, ?)"
-        self.cursor.executemany(sql, customers)
+        self.cursor.executemany(sql, customers[1:])
         self.conn.commit()
         print("Customer CSV Inserted successfully")
 
@@ -165,11 +163,13 @@ class StoreManager:
         WHERE c.email = '{cust_email}'
         """
         self.cursor.execute(sql)
+        #Fetch all customer transactions based off email
         cust_transactions = self.cursor.fetchall()
         print(f"Transactions of {cust_transactions[0][0]}\n{"-"*40}")
         print("Item\tPrice\tQuantity")
         total_cost = 0
         for i in cust_transactions:
+            #Unpack tuple and formatted print
             cust_name, item_name, item_price, item_quantity, cost = i
             total_cost += cost
             print(f"{item_name}\t{item_price}\t{item_quantity}\t{cost}")
@@ -182,3 +182,7 @@ class StoreManager:
         print(f"Display Information of {category}\n{"-"*40}")
         for item in self.cursor.fetchall():
             print(f"{item[1]} costs ${item[2]}")
+
+    def display_item_query(self, selection, query):
+        sql = f"SELECT {selection} from Items_Imanuel WHERE {query}"
+        self.cursor.execute(sql)

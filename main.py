@@ -1,3 +1,5 @@
+from pandas.io.sql import execute
+
 from StoreManager import StoreManager
 
 def main():
@@ -19,6 +21,9 @@ def main():
     email = input("Enter email: ")
     store.display_customer_transactions("alex@myemail.com")
 
+    query = input("Enter query: ")
+    selection = input("Enter selection: ")
+    store.display_item_query(selection, query)
 
 if __name__ == '__main__':
     main()
