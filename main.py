@@ -1,15 +1,5 @@
 from StoreManager import StoreManager
 
-def display_item_information(category):
-    pass
-
-
-def display_customer_information(email):
-    pass
-    # sql = f"SELECT * FROM Customers_Imanuel WHERE Email = '{email}'"
-    # cursor.execute(sql)
-
-
 def main():
     """Main program
     Initializes program, fills table and asks user for inputs
@@ -22,12 +12,12 @@ def main():
     """
     store = StoreManager()
 
-    print("Welcome to the program!")
-    category = input("Enter category: ")
+    print(f"{"-"*40}\nWelcome to the ABC Store\n{"-"*40}")
+    category = input("Enter a category: ")
     store.display_category_totals(category)
 
     email = input("Enter email: ")
-    customer = store.retrieve_customer_transactions("alex@myemail.com")
+    store.display_customer_transactions("alex@myemail.com")
 
 
 if __name__ == '__main__':

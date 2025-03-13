@@ -22,7 +22,7 @@ class StoreManager:
             print(e)
         self.items = self.get_items()
         self.transactions = self.get_transactions()
-        self.customers = self.get_customer()
+        self.customers = self.get_customers()
 
         self.initialize_db()
 
@@ -59,10 +59,12 @@ class StoreManager:
         self.cursor.execute(sql)
         self.transactions = [Transaction(t[0], t[1], t[2], t[3]) for t in self.cursor.fetchall()]
         return self.transactions
+
     def get_customers(self):
         sql = "SELECT * FROM Customers_Imanuel"
         self.cursor.execute(sql)
-        self.customers = Customer(Customer(c[0],c[1],c[2],c[3]) for c in self.cursor.fetchall())
+        self.customers = [Customer(c[0],c[1],c[2],c[3]) for c in self.cursor.fetchall()]
+        return self.customers
 
     def write_csv_to_db(self):
         r = csv.reader(open('Customers_Imanuel.csv'), delimiter='-')
@@ -144,17 +146,15 @@ class StoreManager:
         their respective CategoryTotal table.
         """
         for item in self.items:
-            quantity = sum(q.get_quantity() for q in self.transactions if q.get_id() == item.get_id())
+            quantity = sum(q.get_quantity() for q in self.transactions if q.get_iid() == item.get_id())
             total = (item.get_id(), item.get_name(), item.get_price() * quantity)
             sql = f"INSERT INTO CategoryTotal_{item.get_category()}(ItemID, Item, Amount) VALUES(?,?,?)"
             self.cursor.execute(sql, total)
         self.conn.commit()
 
-    def display_item_by_category(self):
-        pass
-
-    def retrieve_customer_transactions(self, cust_email):
-        """
+    def display_customer_transactions(self, cust_email):
+        """Retrieve Customer and their transactions
+        Gets transactions that belong to the customer into a list
         """
         sql = f"""
         SELECT c.name, i.name, i.price, t.quantity, i.price * t.quantity as 'total' from Transactions_Imanuel as t
@@ -165,12 +165,20 @@ class StoreManager:
         WHERE c.email = '{cust_email}'
         """
         self.cursor.execute(sql)
-        for i in self.cursor.fetchall():
-            print(i)
+        cust_transactions = self.cursor.fetchall()
+        print(f"Transactions of {cust_transactions[0][0]}\n{"-"*40}")
+        print("Item\tPrice\tQuantity")
+        total_cost = 0
+        for i in cust_transactions:
+            cust_name, item_name, item_price, item_quantity, cost = i
+            total_cost += cost
+            print(f"{item_name}\t{item_price}\t{item_quantity}\t{cost}")
+        print(f"Total Cost of {cust_transactions[0][0]} is {total_cost}\n{"-"*40}")
+
 
     def display_category_totals(self, category):
         sql = f"SELECT * FROM CategoryTotal_{category}"
         self.cursor.execute(sql)
-        print(f"Display Information of {category}")
+        print(f"Display Information of {category}\n{"-"*40}")
         for item in self.cursor.fetchall():
             print(f"{item[1]} costs ${item[2]}")
