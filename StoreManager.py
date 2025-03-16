@@ -201,15 +201,21 @@ class StoreManager:
         ON t.cid = c.cid
         WHERE c.email = ?
         """
-        self.cursor.execute(sql, (cust_email,))
-        # Fetch all customer transactions based off email
-        cust_transactions = self.cursor.fetchall()
 
-        if not cust_transactions:
-            print("Fail!")
+        try: #Try to execute query, return error if not
+            self.cursor.execute(sql, (cust_email,))
+            # Fetch all customer transactions based off email
+            cust_transactions = self.cursor.fetchall()
+
+        except sqlite3.Error as e:
+            print("Database Error!")
             return
 
-        print(cust_transactions)
+        if not cust_transactions: #Check if email has anything
+            print(f"No transactions found for {cust_email}")
+            return
+
+        #Formatted printing
         print(f"Transactions of {cust_transactions[0][0]}\n{"-" * 40}")
         print("Item\tPrice\tQuantity")
         total_cost = 0
@@ -220,17 +226,32 @@ class StoreManager:
             print(f"{item_name}\t{item_price}\t{item_quantity}\t{cost}")
         print(f"Total Cost of {cust_transactions[0][0]} is {total_cost}\n{"-" * 40}")
 
+
     def display_category_totals(self, category):
+        """Display Category_total tables
+        Protects from SQL injection by checking if in list
+        Selects table and displays information via query"""
+
         if category not in StoreManager.valid_categories:
             print("Invalid Category")
             return
-        sql = f"SELECT * FROM CategoryTotal_{category}"
-        self.cursor.execute(sql)
+
+        try:
+            sql = f"SELECT * FROM CategoryTotal_{category}"
+            self.cursor.execute(sql)
+        except sqlite3.Error as e:
+            print("Database Error!")
+
         print(f"Display Information of {category}\n{"-" * 40}")
         for item in self.cursor.fetchall():
             print(f"{item[1]} costs ${item[2]}")
 
     def display_item_query(self, x, y):
+        """Display Item query
+        Make a selection (x)
+        Add conditionals (y)
+        Displays the query line by line or throws error"""
+
         try:
             sql = f"SELECT {x} from Items_Imanuel WHERE {y}"
             print(sql)
@@ -239,3 +260,6 @@ class StoreManager:
                 print(item)
         except Exception as e:
             print(e)
+    def close_database(self):
+        self.cursor.close()
+        self.conn.close()
