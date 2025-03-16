@@ -19,11 +19,12 @@ def main():
     store.display_category_totals(category)
 
     email = input("Enter email: ")
-    store.display_customer_transactions("alex@myemail.com")
+    store.display_customer_transactions(email)
 
-    query = input("Enter query: ")
-    selection = input("Enter selection: ")
-    store.display_item_query(selection, query)
+    print("SELECT x FROM Items_Imanuel WHERE y")
+    x = input("Enter x: ")
+    y = input("Enter y: ")
+    store.display_item_query(x, y)
 
 if __name__ == '__main__':
     main()

@@ -9,6 +9,7 @@ from Transaction import Transaction
 
 class StoreManager:
     store_db = "MyStore_Imanuel.db"
+    valid_categories = ("Dairy", "Vegetables", "Fruit", "Meat", "Snacks")
 
     def __init__(self):
         """Initialize connection for Store database"""
@@ -17,6 +18,8 @@ class StoreManager:
             self.cursor = self.conn.cursor()
         except Exception as e:
             print(e)
+
+        # Get lists from tables
         self.items = self.get_items()
         self.transactions = self.get_transactions()
         self.customers = self.get_customers()
@@ -34,65 +37,95 @@ class StoreManager:
         DELETE FROM Items_Imanuel;
         DELETE FROM Transactions_Imanuel; """)
 
-        #Fill Database
+        # Fill Database
         self.write_csv_to_db()
         self.write_json_to_db()
         self.write_file_to_db()
 
-        #Create and fill tables
+        # Create and fill tables
         self.create_tables()
         self.fill_categories()
         self.conn.commit()
 
     def get_items(self):
-        sql = "SELECT * FROM Items_Imanuel"
-        self.cursor.execute(sql)
-        self.items = [Item(i[0], i[1], i[2], i[3]) for i in self.cursor.fetchall()]
+        """Gets items from database
+        Grabs updated tables from database
+        """
+        try:
+            sql = "SELECT * FROM Items_Imanuel"
+            self.cursor.execute(sql)
+            self.items = [Item(i[0], i[1], i[2], i[3]) for i in self.cursor.fetchall()]
+        except sqlite3.Error as e:
+            print(e)
+
         return self.items
 
     def get_transactions(self):
-        sql = "SELECT * FROM Transactions_Imanuel"
-        self.cursor.execute(sql)
-        self.transactions = [Transaction(t[0], t[1], t[2], t[3]) for t in self.cursor.fetchall()]
+        """Gets transactions from database
+        Grabs updated tables from database"""
+        try:
+            sql = "SELECT * FROM Transactions_Imanuel"
+            self.cursor.execute(sql)
+            self.transactions = [Transaction(t[0], t[1], t[2], t[3]) for t in self.cursor.fetchall()]
+        except sqlite3.Error as e:
+            print(e)
+
         return self.transactions
 
     def get_customers(self):
-        sql = "SELECT * FROM Customers_Imanuel"
-        self.cursor.execute(sql)
-        self.customers = [Customer(c[0],c[1],c[2],c[3]) for c in self.cursor.fetchall()]
+        """Gets customers from database
+        Grabs updated tables from database"""
+        try:
+            sql = "SELECT * FROM Customers_Imanuel"
+            self.cursor.execute(sql)
+            self.customers = [Customer(c[0], c[1], c[2], c[3]) for c in self.cursor.fetchall()]
+        except sqlite3.Error as e:
+            print(e)
+
         return self.customers
 
     def write_csv_to_db(self):
         """Write CSV to database
         reads .csv file and inserts directly into database"""
-        r = csv.reader(open('Customers_Imanuel.csv'), delimiter='-')
-        customers = [cust for cust in r]
-        sql = "INSERT INTO Customers_Imanuel VALUES (?, ?, ?, ?)"
-        self.cursor.executemany(sql, customers[1:])
-        self.conn.commit()
-        print("Customer CSV Inserted successfully")
+        try:
+            with open('Customers_Imanuel.csv', 'r') as f:
+                r = csv.reader(f, delimiter='-')
+                customers = [cust for cust in r]
+                print(customers)
+                sql = "INSERT INTO Customers_Imanuel VALUES (?, ?, ?, ?)"
+                self.cursor.executemany(sql, customers[1:])
+                self.conn.commit()
+            print("Customer CSV Inserted successfully")
+        except Exception as e:
+            print(e)
 
     def write_json_to_db(self):
         """Write JSON to Database
         reads .json file and inserts directly into database
         """
-        with open('Items_Imanuel.json', 'r') as f:
-            loader = json.load(f)
-            items = [[i['iid'], i['name'], i['category'], i['price']] for i in loader]
-            sql = "INSERT INTO Items_Imanuel VALUES (?, ?, ?, ?)"
-            self.cursor.executemany(sql, items)
-            self.conn.commit()
-            print("Item json Inserted successfully")
+        try:
+            with open('Items_Imanuel.json', 'r') as f:
+                loader = json.load(f)
+                items = [[i['iid'], i['name'], i['category'], i['price']] for i in loader]
+                sql = "INSERT INTO Items_Imanuel VALUES (?, ?, ?, ?)"
+                self.cursor.executemany(sql, items)
+                self.conn.commit()
+                print("Item json Inserted successfully")
+        except Exception as e:
+            print(e)
 
     def write_file_to_db(self):
-        with open('Transactions_Imanuel.txt', 'r') as f:
-            f.readline()
-            f.readline()
-            transactions = [list(line.split()) for line in f.readlines()]
-            sql = "INSERT INTO Transactions_Imanuel VALUES (?, ?, ?, ?)"
-            self.cursor.executemany(sql, transactions)
-            self.conn.commit()
-            print("Transaction file Inserted successfully")
+        """Write Text file to Database
+        reads .txt file and inserts directly into database"""
+        try:
+            with open('Transactions_Imanuel.txt', 'r') as f:
+                transactions = [list(line.split()) for line in f.readlines()]
+                sql = "INSERT INTO Transactions_Imanuel VALUES (?, ?, ?, ?)"
+                self.cursor.executemany(sql, transactions[2:])
+                self.conn.commit()
+                print("Transaction file Inserted successfully")
+        except Exception as e:
+            print(e)
 
     def create_tables(self):
         """Create tables
@@ -143,12 +176,18 @@ class StoreManager:
         Fetches item and transaction list, then inserts calculated data into
         their respective CategoryTotal table.
         """
-        for item in self.items:
-            quantity = sum(q.get_quantity() for q in self.transactions if q.get_iid() == item.get_id())
-            total = (item.get_id(), item.get_name(), item.get_price() * quantity)
-            sql = f"INSERT INTO CategoryTotal_{item.get_category()}(ItemID, Item, Amount) VALUES(?,?,?)"
-            self.cursor.execute(sql, total)
-        self.conn.commit()
+        try:
+            for item in self.items:
+                # For every item, check the transaction table and add all quantities
+                quantity = sum(q.get_quantity() for q in self.transactions if q.get_iid() == item.get_id())
+                # Calculate item price * the quantity
+                total = (item.get_id(), item.get_name(), item.get_price() * quantity)
+                sql = f"INSERT INTO CategoryTotal_{item.get_category()}(ItemID, Item, Amount) VALUES(?,?,?)"
+                self.cursor.execute(sql, total)
+            # insert into db
+            self.conn.commit()
+        except Exception as e:
+            print(e)
 
     def display_customer_transactions(self, cust_email):
         """Retrieve Customer and their transactions
@@ -160,29 +199,43 @@ class StoreManager:
         ON i.iid = t.iid
         INNER JOIN Customers_Imanuel as c
         ON t.cid = c.cid
-        WHERE c.email = '{cust_email}'
+        WHERE c.email = ?
         """
-        self.cursor.execute(sql)
-        #Fetch all customer transactions based off email
+        self.cursor.execute(sql, (cust_email,))
+        # Fetch all customer transactions based off email
         cust_transactions = self.cursor.fetchall()
-        print(f"Transactions of {cust_transactions[0][0]}\n{"-"*40}")
+
+        if not cust_transactions:
+            print("Fail!")
+            return
+
+        print(cust_transactions)
+        print(f"Transactions of {cust_transactions[0][0]}\n{"-" * 40}")
         print("Item\tPrice\tQuantity")
         total_cost = 0
         for i in cust_transactions:
-            #Unpack tuple and formatted print
+            # Unpack tuple and formatted print
             cust_name, item_name, item_price, item_quantity, cost = i
             total_cost += cost
             print(f"{item_name}\t{item_price}\t{item_quantity}\t{cost}")
-        print(f"Total Cost of {cust_transactions[0][0]} is {total_cost}\n{"-"*40}")
-
+        print(f"Total Cost of {cust_transactions[0][0]} is {total_cost}\n{"-" * 40}")
 
     def display_category_totals(self, category):
+        if category not in StoreManager.valid_categories:
+            print("Invalid Category")
+            return
         sql = f"SELECT * FROM CategoryTotal_{category}"
         self.cursor.execute(sql)
-        print(f"Display Information of {category}\n{"-"*40}")
+        print(f"Display Information of {category}\n{"-" * 40}")
         for item in self.cursor.fetchall():
             print(f"{item[1]} costs ${item[2]}")
 
-    def display_item_query(self, selection, query):
-        sql = f"SELECT {selection} from Items_Imanuel WHERE {query}"
-        self.cursor.execute(sql)
+    def display_item_query(self, x, y):
+        try:
+            sql = f"SELECT {x} from Items_Imanuel WHERE {y}"
+            print(sql)
+            self.cursor.execute(sql)
+            for item in self.cursor.fetchall():
+                print(item)
+        except Exception as e:
+            print(e)
