@@ -105,7 +105,6 @@ class StoreManager:
             with open('Customers_Imanuel.csv', 'r') as f:
                 r = csv.reader(f, delimiter='-')
                 customers = [cust for cust in r]
-                print(customers)
                 sql = "INSERT INTO Customers_Imanuel VALUES (?, ?, ?, ?)"
                 self.cursor.executemany(sql, customers[1:])
                 self.conn.commit()
