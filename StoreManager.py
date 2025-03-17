@@ -1,12 +1,12 @@
-import csv
-import json
-import sqlite3
 # Assignment: 2
 # Course: PROG23199
 # Submission date: 20205-03-16
 # Name: Imanuel Chatur
 # Sheridan ID: 991637637
 # Instructors name: Syed Tanbeer
+import csv
+import json
+import sqlite3
 from Customer import Customer
 from Item import Item
 from Transaction import Transaction
