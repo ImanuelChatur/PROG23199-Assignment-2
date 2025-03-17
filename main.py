@@ -1,4 +1,12 @@
+# Assignment: 2
+# Course: PROG23199
+# Submission date: 20205-03-16
+# Name: Imanuel Chatur
+# Sheridan ID: 991637637
+# Instructors name: Syed Tanbeer
+
 from StoreManager import StoreManager
+
 
 def main():
     """Main program
@@ -10,10 +18,10 @@ def main():
         Calculate and display total cost of all transactions
     4. User enters SQL query; do it
     """
-    store = StoreManager() #Open Store
+    store = StoreManager()  # Open Store
 
-    #Display Detailed Information
-    print(f"{"-"*40}\nWelcome to the ABC Store\n{"-"*40}")
+    # Display Detailed Information
+    print(f"{"-" * 40}\nWelcome to the ABC Store\n{"-" * 40}")
     category = input("Enter a category: ")
     store.display_category_totals(category)
 
@@ -25,7 +33,8 @@ def main():
     y = input("Enter y: ")
     store.display_item_query(x, y)
 
-    store.close_database() #End Program
+    store.close_database()  # End Program
+
 
 if __name__ == '__main__':
     main()

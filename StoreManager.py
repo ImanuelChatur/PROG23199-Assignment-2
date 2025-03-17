@@ -1,15 +1,26 @@
 import csv
 import json
 import sqlite3
-
+# Assignment: 2
+# Course: PROG23199
+# Submission date: 20205-03-16
+# Name: Imanuel Chatur
+# Sheridan ID: 991637637
+# Instructors name: Syed Tanbeer
 from Customer import Customer
 from Item import Item
 from Transaction import Transaction
 
 
 class StoreManager:
+    """Store Manager Class
+    Manages the entire database; performs actions modifies tables etc.
+    Done in a class to stay modular and avoid global usage
+    """
+
+    # Class variables
     store_db = "MyStore_Imanuel.db"
-    valid_categories = ("Dairy", "Vegetables", "Fruit", "Meat", "Snacks")
+    valid_categories = ("dairy", "vegetables", "fruit", "meat", "snacks")
 
     def __init__(self):
         """Initialize connection for Store database"""
@@ -54,7 +65,8 @@ class StoreManager:
         try:
             sql = "SELECT * FROM Items_Imanuel"
             self.cursor.execute(sql)
-            self.items = [Item(i[0], i[1], i[2], i[3]) for i in self.cursor.fetchall()]
+            self.items = [Item(i[0], i[1], i[2], i[3])
+                          for i in self.cursor.fetchall()]
         except sqlite3.Error as e:
             print(e)
 
@@ -66,7 +78,8 @@ class StoreManager:
         try:
             sql = "SELECT * FROM Transactions_Imanuel"
             self.cursor.execute(sql)
-            self.transactions = [Transaction(t[0], t[1], t[2], t[3]) for t in self.cursor.fetchall()]
+            self.transactions = [Transaction(
+                t[0], t[1], t[2], t[3]) for t in self.cursor.fetchall()]
         except sqlite3.Error as e:
             print(e)
 
@@ -78,7 +91,8 @@ class StoreManager:
         try:
             sql = "SELECT * FROM Customers_Imanuel"
             self.cursor.execute(sql)
-            self.customers = [Customer(c[0], c[1], c[2], c[3]) for c in self.cursor.fetchall()]
+            self.customers = [Customer(
+                c[0], c[1], c[2], c[3]) for c in self.cursor.fetchall()]
         except sqlite3.Error as e:
             print(e)
 
@@ -104,9 +118,11 @@ class StoreManager:
         reads .json file and inserts directly into database
         """
         try:
+            # Takes JSON as a dict, then with its keys assigns values
             with open('Items_Imanuel.json', 'r') as f:
                 loader = json.load(f)
-                items = [[i['iid'], i['name'], i['category'], i['price']] for i in loader]
+                items = [[i['iid'], i['name'], i['category'], i['price']
+                          ] for i in loader]
                 sql = "INSERT INTO Items_Imanuel VALUES (?, ?, ?, ?)"
                 self.cursor.executemany(sql, items)
                 self.conn.commit()
@@ -178,11 +194,19 @@ class StoreManager:
         """
         try:
             for item in self.items:
-                # For every item, check the transaction table and add all quantities
-                quantity = sum(q.get_quantity() for q in self.transactions if q.get_iid() == item.get_id())
+                # For every item, check transaction table and add all quantities
+                quantity = sum(
+                    q.get_quantity()
+                    for q in self.transactions
+                    if q.get_iid() == item.get_id())
+
                 # Calculate item price * the quantity
-                total = (item.get_id(), item.get_name(), item.get_price() * quantity)
-                sql = f"INSERT INTO CategoryTotal_{item.get_category()}(ItemID, Item, Amount) VALUES(?,?,?)"
+                total = (item.get_id(),
+                         item.get_name(),
+                         item.get_price() * quantity)
+
+                sql = (f"INSERT INTO CategoryTotal_{item.get_category()}"
+                       f"(ItemID, Item, Amount) VALUES(?,?,?)")
                 self.cursor.execute(sql, total)
             # insert into db
             self.conn.commit()
@@ -194,7 +218,8 @@ class StoreManager:
         Gets transactions that belong to the customer into a list
         """
         sql = f"""
-        SELECT c.name, i.name, i.price, t.quantity, i.price * t.quantity as 'total' from Transactions_Imanuel as t
+        SELECT c.name, i.name, i.price, t.quantity,
+         i.price * t.quantity as 'total' from Transactions_Imanuel as t
         INNER JOIN Items_Imanuel as i
         ON i.iid = t.iid
         INNER JOIN Customers_Imanuel as c
@@ -202,7 +227,7 @@ class StoreManager:
         WHERE c.email = ?
         """
 
-        try: #Try to execute query, return error if not
+        try:  # Try to execute query, return error if not
             self.cursor.execute(sql, (cust_email,))
             # Fetch all customer transactions based off email
             cust_transactions = self.cursor.fetchall()
@@ -211,11 +236,11 @@ class StoreManager:
             print("Database Error!")
             return
 
-        if not cust_transactions: #Check if email has anything
+        if not cust_transactions:  # Check if email has anything
             print(f"No transactions found for {cust_email}")
             return
 
-        #Formatted printing
+        # Formatted printing
         print(f"Transactions of {cust_transactions[0][0]}\n{"-" * 40}")
         print("Item\tPrice\tQuantity")
         total_cost = 0
@@ -224,15 +249,15 @@ class StoreManager:
             cust_name, item_name, item_price, item_quantity, cost = i
             total_cost += cost
             print(f"{item_name}\t{item_price}\t{item_quantity}\t{cost}")
-        print(f"Total Cost of {cust_transactions[0][0]} is {total_cost}\n{"-" * 40}")
-
+        print(f"Total Cost of "
+              f"{cust_transactions[0][0]} is {total_cost}\n{"-" * 40}")
 
     def display_category_totals(self, category):
         """Display Category_total tables
         Protects from SQL injection by checking if in list
         Selects table and displays information via query"""
 
-        if category not in StoreManager.valid_categories:
+        if category.lower() not in StoreManager.valid_categories:
             print("Invalid Category")
             return
 
@@ -260,6 +285,9 @@ class StoreManager:
                 print(item)
         except Exception as e:
             print(e)
+
     def close_database(self):
+        """Close database
+        Just closes up"""
         self.cursor.close()
         self.conn.close()
